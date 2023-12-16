@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:socialnetworkapp/screens/auth/sign_up.dart';
+import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/services/auth.dart';
 
-class SignIn extends StatefulWidget {
-  const SignIn({super.key});
+class SignUp extends StatefulWidget {
+  const SignUp({super.key});
 
   @override
-  State<SignIn> createState() => _SignInState();
+  State<SignUp> createState() => _SignUpState();
 }
 
-class _SignInState extends State<SignIn> {
+class _SignUpState extends State<SignUp> {
   @override
 
   final AuthService _auth = AuthService();
@@ -18,17 +18,22 @@ class _SignInState extends State<SignIn> {
 
   String email = "";
   String password = "";
+  String confirmPwd = "";
 
   String error = "";
 
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Center(child: Text(
-          'Sign in to Social',
-          style: TextStyle(color: Colors.white),
-        )),
+        title: Container(
+          margin: EdgeInsets.symmetric(vertical: 0, horizontal:  45),
+          child: Text(
+            'Sign up to Social',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
         backgroundColor: Colors.blue[500],
       ),
       body: Column(
@@ -58,7 +63,8 @@ class _SignInState extends State<SignIn> {
                       ),
                       child: TextFormField(
                         validator: (val) {
-                          return (val == null || val.isEmpty) ? "Please enter an email" : null;
+                          return (val == null || val.isEmpty)
+                              ? "Please enter an email" : null;
                         },
                         decoration: InputDecoration(
                             icon: Icon(Icons.person),
@@ -78,9 +84,12 @@ class _SignInState extends State<SignIn> {
                       ),
                       child: TextFormField(
                         validator: (val) {
-                          return (val == null || val.isEmpty) ? "Please enter an password" : null;
+                          return (val == null || val.isEmpty)
+                              ? "Please enter an password"
+                              : val.length < 6
+                              ? "Password should be at least 6 characters" : null;
                         },
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           icon: Icon(Icons.lock),
                           labelText: "Password"
                         ),
@@ -91,35 +100,61 @@ class _SignInState extends State<SignIn> {
                       ),
                     ),
                     SizedBox(height: 20,),
-                    if(error.isNotEmpty) Column(
-                        children: [
-                          Text(
-                            error,
-                            style: const TextStyle(color: Colors.red),),
-                          SizedBox(height: 20,)
-                        ]
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                      decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: TextFormField(
+                        validator: (val) {
+                          return (val == null || val.isEmpty)
+                              ? "Please enter an email"
+                              : val != password
+                                ? "Please write identical passwords"
+                                : null;
+                        },
+                        decoration: const InputDecoration(
+                            icon: Icon(Icons.lock),
+                            labelText: "Confirm password"
+                        ),
+                        obscureText: true,
+                        onChanged: (val){
+                          setState(() => confirmPwd = val);
+                        },
+                      ),
                     ),
+                    const SizedBox(height: 20,),
+                    if(error.isNotEmpty) Column(
+                      children: [
+                        Text(
+                          error,
+                          style: const TextStyle(color: Colors.red),),
+                        SizedBox(height: 20,)
+                      ]
+                    ),
+
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 100),
+                        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 100),
                         backgroundColor: Colors.blue,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0),
                         ),
+
                       ),
                       onPressed: () async {
-                        if(_formKey.currentState!.validate()) {
-                          setState(() => error = "");
-                          if(_formKey.currentState!.validate()){
-                            dynamic result = await _auth.signInWithEmailAndPassword(email: email, password: password);
-                            if(result is String) {
-                              setState(() => error = result);
-                            }
+                        setState(() => error = "");
+                        if(_formKey.currentState!.validate()){
+                          dynamic result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+                          if(result is String) {
+                            setState(() => error = result);
                           }
+                          Navigator.pop(context);
                         }
                     },
-                        child: Text(
-                          "Sign in",
+                        child: const Text(
+                          "Register",
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         )
                     ),
@@ -130,45 +165,27 @@ class _SignInState extends State<SignIn> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "Don't have an account?",
+              const Text(
+                "Already have an account?",
                 style: TextStyle(
                 ),
               ),
               TextButton(
-                child: Text(
-                  "Sign up",
+                child: const Text(
+                  "Sign in",
                   style: TextStyle(
                     color: Colors.blue,
                     decoration: TextDecoration.underline
                   ),
                 ),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp()));
+                  Navigator.pop(context);
                 },
 
               ),
             ]
           ),
-          SizedBox(height: 20,),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 100.0),
-            child: ElevatedButton(
-              child: Text(
-                'Sign in anonymously',
-                style: TextStyle(color: Colors.grey[700]),
-              ),
-              onPressed: () async {
-                dynamic result = await _auth.signInAnon();
-
-                if(result == null) print('error sign in');
-
-                else print('signed in');
-                print(result);
-
-              },
-            ),
-          ),
+          const SizedBox(height: 20,),
         ]
       ),
     );
