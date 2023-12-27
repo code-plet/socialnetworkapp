@@ -1,46 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:socialnetworkapp/services/auth.dart';
+import 'package:socialnetworkapp/widget/post_card.dart';
 
-class Home extends StatelessWidget {
-  const Home({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-
-    final _auth = AuthService();
-
-    return Container(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Social",
-            style: GoogleFonts.dancingScript(
-              textStyle: TextStyle(
-                color: Colors.white,
-                fontSize: 40
-              )
-            )
-          ),
-          backgroundColor: Colors.blue[500],
-          actions: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-              child: ElevatedButton(
-                  onPressed: () async {
-                    await _auth.logOut();
-                  },
-                  child: Text(
-                    "Log out",
-                    style: TextStyle(
-                      color: Colors.blue[300]
-                    ),
-                  ),
-              ),
-            )
-          ],
-        ),
-      ),
+    return Column(
+      children: [
+        StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('posts').snapshots(),
+          builder: (context,
+              AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return ListView.builder(
+                shrinkWrap: true,
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (ctx, index) {
+                  return PostCard(snap: snapshot.data!.docs[index].data());
+                });
+          },
+        )
+      ],
     );
   }
 }
