@@ -5,11 +5,24 @@ import 'package:socialnetworkapp/models/local_user.dart';
 class AuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleAuthProvider _googleProvider = GoogleAuthProvider();
 
   //Convert Firebase User to native User
   LocalUser? _userFromFirebaseUser(User? user) {
     if(user == null) return null;
-    return LocalUser(uid: user.uid);
+    return LocalUser(uid: user.uid, displayName: user.displayName, photoURL: user.photoURL.toString());
+  }
+
+  LocalUser? getCurrentUser() {
+    dynamic user = _auth.currentUser;
+    if(user is User){
+      return LocalUser(uid: user.uid, displayName: user.displayName, photoURL: user.photoURL.toString());
+    }
+    else return null;
+  }
+
+  User? getFirebaseUser(){
+    return _auth.currentUser;
   }
 
   //Establish auth stream from Firebase Auth
@@ -56,6 +69,16 @@ class AuthService {
               password: password);
       return _userFromFirebaseUser(result.user);
     } catch (e) {
+      return e.toString();
+    }
+  }
+
+  //Sign in with Google Account
+  Future signInWithGoogle() async {
+    try{
+      UserCredential result = await _auth.signInWithProvider(_googleProvider);
+      return _userFromFirebaseUser(result.user);
+    } catch(e){
       return e.toString();
     }
   }

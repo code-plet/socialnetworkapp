@@ -11,7 +11,6 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-  @override
 
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
@@ -22,6 +21,7 @@ class _SignUpState extends State<SignUp> {
 
   String error = "";
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,

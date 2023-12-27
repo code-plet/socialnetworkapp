@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/screens/auth/auth.dart';
+import 'package:socialnetworkapp/screens/auth/create_profile.dart';
 import 'package:socialnetworkapp/screens/home/home.dart';
 
 class Wrapper extends StatelessWidget {
@@ -14,6 +15,7 @@ class Wrapper extends StatelessWidget {
     print(user.toString());
 
     if(user == null) return Auth();
+    if(user.displayName == null) return CreateProfile();
     else return Home();
   }
 }

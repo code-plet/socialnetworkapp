@@ -10,6 +10,8 @@ class Home extends StatelessWidget {
 
     final _auth = AuthService();
 
+    print(_auth.getCurrentUser()!.displayName.toString()+"username");
+
     return Container(
       child: Scaffold(
         appBar: AppBar(
@@ -40,6 +42,8 @@ class Home extends StatelessWidget {
             )
           ],
         ),
+        body: Text(_auth.getCurrentUser()!.displayName.toString()),
+
       ),
     );
   }
