@@ -7,10 +7,15 @@ import 'package:uuid/uuid.dart';
 class PostService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<String> uploadPost(String description, Uint8List file, String uid,
+  Future<String> uploadPost(String description, Uint8List file, String? uid,
       String username, String profImage) async {
     String res = "Some error occurred";
-    print(file);
+
+    if (uid == null) {
+      res = "Not have user id";
+      return res;
+    }
+
     try {
       String photoUrl =
           await StorageMethods().uploadImageToStorage('posts', file, true);
@@ -18,12 +23,10 @@ class PostService {
       Post post = Post(
         description: description,
         uid: uid,
-        username: username,
         likes: [],
         postId: postId,
         datePublished: DateTime.now(),
         postUrl: photoUrl,
-        profImage: profImage,
       );
       _firestore.collection('posts').doc(postId).set(post.toJson());
       res = "success";
@@ -33,7 +36,7 @@ class PostService {
     return res;
   }
 
-  Future<String> likePost(String postId, String uid, List likes) async {
+  Future<String> likePost(String postId, String? uid, List likes) async {
     String res = "Some error occurred";
     try {
       if (likes.contains(uid)) {

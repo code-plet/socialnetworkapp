@@ -14,12 +14,11 @@ class CommentService {
       if (content.isNotEmpty) {
         String commentId = const Uuid().v1();
         Comment comment = Comment(
-            content: content,
-            uid: uid,
-            avatar: avatar,
-            commentId: commentId,
-            dateComment: dateComment,
-            userName: userName);
+          content: content,
+          uid: uid,
+          commentId: commentId,
+          dateComment: dateComment,
+        );
 
         _firestore
             .collection('posts')

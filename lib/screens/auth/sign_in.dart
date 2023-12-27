@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sign_in_button/sign_in_button.dart';
 import 'package:socialnetworkapp/screens/auth/sign_up.dart';
 import 'package:socialnetworkapp/services/auth.dart';
+
+import '../../models/local_user.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -21,6 +24,7 @@ class _SignInState extends State<SignIn> {
 
   String error = "";
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -108,13 +112,14 @@ class _SignInState extends State<SignIn> {
                         ),
                       ),
                       onPressed: () async {
-                        if(_formKey.currentState!.validate()) {
-                          setState(() => error = "");
-                          if(_formKey.currentState!.validate()){
-                            dynamic result = await _auth.signInWithEmailAndPassword(email: email, password: password);
-                            if(result is String) {
-                              setState(() => error = result);
-                            }
+                        setState(() => error = "");
+                        if(_formKey.currentState!.validate()){
+                          dynamic result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+                          if(result is String) {
+                            setState(() => error = result);
+                          }
+                          if(result is LocalUser){
+
                           }
                         }
                     },
@@ -150,23 +155,50 @@ class _SignInState extends State<SignIn> {
               ),
             ]
           ),
+          Row(children: <Widget>[
+            Expanded(
+              child: new Container(
+                  margin: const EdgeInsets.only(left: 10.0, right: 20.0),
+                  child: Divider(
+                    color: Colors.black,
+                    height: 36,
+                  )),
+            ),
+            Text("OR"),
+            Expanded(
+              child: new Container(
+                  margin: const EdgeInsets.only(left: 20.0, right: 10.0),
+                  child: Divider(
+                    color: Colors.black,
+                    height: 36,
+                  )),
+            ),
+          ]),
+          SignInButton(
+              Buttons.google,
+              text: "Sign up with Google",
+              onPressed: () {
+                _auth.signInWithGoogle();
+          }),
           SizedBox(height: 20,),
           Container(
-            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 100.0),
-            child: ElevatedButton(
-              child: Text(
-                'Sign in anonymously',
-                style: TextStyle(color: Colors.grey[700]),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 0, horizontal: 100),
+              child: ElevatedButton(
+                child: Text(
+                  'Sign in anonymously',
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+                onPressed: () async {
+                  dynamic result = await _auth.signInAnon();
+
+                  if(result == null) print('error sign in');
+
+                  else print('signed in');
+                  print(result);
+
+                },
               ),
-              onPressed: () async {
-                dynamic result = await _auth.signInAnon();
-
-                if(result == null) print('error sign in');
-
-                else print('signed in');
-                print(result);
-
-              },
             ),
           ),
         ]

@@ -2,13 +2,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/services/post.dart';
 import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/utils/image_picker.dart';
 import 'package:socialnetworkapp/utils/snackbar.dart';
 
 class AddPostScreen extends StatefulWidget {
-  const AddPostScreen({Key? key}) : super(key: key);
+  const AddPostScreen({super.key});
 
   @override
   State<AddPostScreen> createState() => _AddPostScreenState();
@@ -16,7 +18,6 @@ class AddPostScreen extends StatefulWidget {
 
 class _AddPostScreenState extends State<AddPostScreen> {
   Uint8List? _file;
-  final profImage = 'assets/post_cover.png';
   bool isLoading = false;
   final TextEditingController _descriptionController = TextEditingController();
 
@@ -60,9 +61,17 @@ class _AddPostScreenState extends State<AddPostScreen> {
     );
   }
 
-  void postImage() async {
-    const userId = 'Q60M3qPE77QOsRwd2WGyl6S0LpI2';
-    const userName = '';
+  void postImage(LocalUser? user) async {
+    final String? uid = user?.uid;
+    final String? name = user?.displayName;
+    final String profilePic = user?.photoURL ?? '';
+
+    if (uid == null || name == null) {
+      showSnackBar(
+        context,
+        'Can not read user information',
+      );
+    }
 
     setState(() {
       isLoading = true;
@@ -73,9 +82,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
       String res = await PostService().uploadPost(
         _descriptionController.text,
         _file!,
-        userId,
-        userName,
-        profImage,
+        uid!,
+        name!,
+        profilePic,
       );
       if (res == "success") {
         setState(() {
@@ -120,6 +129,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<LocalUser?>(context);
+    final profileImg = user?.photoURL != null
+        ? NetworkImage(user!.photoURL)
+        : const AssetImage('assets/image/empty_avatar.png')
+            as ImageProvider<Object>;
+
     return _file == null
         ? Center(
             child: IconButton(
@@ -142,7 +157,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               centerTitle: false,
               actions: <Widget>[
                 TextButton(
-                  onPressed: postImage,
+                  onPressed: () => postImage(user),
                   child: const Text(
                     "Post",
                     style: TextStyle(
@@ -165,7 +180,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     CircleAvatar(
-                      backgroundImage: AssetImage(profImage),
+                      backgroundImage: profileImg,
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.3,

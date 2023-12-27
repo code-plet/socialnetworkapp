@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/screens/home/comment_screen.dart';
 import 'package:socialnetworkapp/services/post.dart';
 import 'package:socialnetworkapp/utils/colors.dart';
@@ -20,7 +22,7 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   int commentLen = 0;
   bool isLikeAnimating = false;
-  final String uid = 'Q60M3qPE77QOsRwd2WGyl6S0LpI2';
+  LocalUser? user;
 
   @override
   void initState() {
@@ -53,6 +55,9 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<LocalUser?>(context);
+    final String? uid = user?.uid;
+
     return Container(
       // boundary needed for web
       decoration: BoxDecoration(
@@ -64,81 +69,102 @@ class _PostCardState extends State<PostCard> {
       child: Column(
         children: [
           // HEADER SECTION OF THE POST
-          Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: 4,
-              horizontal: 16,
-            ).copyWith(right: 0),
-            child: Row(
-              children: <Widget>[
-                CircleAvatar(
-                  radius: 16,
-                  backgroundImage: NetworkImage(
-                    widget.snap['profImage'].toString(),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 8,
+          StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection('users')
+                .doc(widget.snap['uid'])
+                .snapshots(),
+            builder: (context,
+                AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>>
+                    snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              LocalUser user = LocalUser.fromSnap(snapshot.data!);
+
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4,
+                  horizontal: 16,
+                ).copyWith(right: 0),
+                child: Row(
+                  children: <Widget>[
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundImage: user.photoURL.isNotEmpty
+                          ? NetworkImage(
+                              user.photoURL.toString(),
+                            )
+                          : const AssetImage('assets/images/empty_avatar.png')
+                              as ImageProvider<Object>,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          widget.snap['username'].toString(),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 8,
                         ),
-                      ],
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              user.displayName.toString(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                widget.snap['uid'].toString() == uid
-                    ? IconButton(
-                        onPressed: () {
-                          showDialog(
-                            useRootNavigator: false,
-                            context: context,
-                            builder: (context) {
-                              return Dialog(
-                                child: ListView(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    shrinkWrap: true,
-                                    children: [
-                                      'Delete',
-                                    ]
-                                        .map(
-                                          (e) => InkWell(
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
+                    widget.snap['uid'].toString() == uid
+                        ? IconButton(
+                            onPressed: () {
+                              showDialog(
+                                useRootNavigator: false,
+                                context: context,
+                                builder: (context) {
+                                  return Dialog(
+                                    child: ListView(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16),
+                                        shrinkWrap: true,
+                                        children: [
+                                          'Delete',
+                                        ]
+                                            .map(
+                                              (e) => InkWell(
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
                                                         vertical: 12,
                                                         horizontal: 16),
-                                                child: Text(e),
-                                              ),
-                                              onTap: () {
-                                                deletePost(
-                                                  widget.snap['postId']
-                                                      .toString(),
-                                                );
-                                                // remove the dialog box
-                                                Navigator.of(context).pop();
-                                              }),
-                                        )
-                                        .toList()),
+                                                    child: Text(e),
+                                                  ),
+                                                  onTap: () {
+                                                    deletePost(
+                                                      widget.snap['postId']
+                                                          .toString(),
+                                                    );
+                                                    // remove the dialog box
+                                                    Navigator.of(context).pop();
+                                                  }),
+                                            )
+                                            .toList()),
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                        icon: const Icon(Icons.more_vert),
-                      )
-                    : Container(),
-              ],
-            ),
+                            icon: const Icon(Icons.more_vert),
+                          )
+                        : Container(),
+                  ],
+                ),
+              );
+            },
           ),
           // IMAGE SECTION OF THE POST
           GestureDetector(

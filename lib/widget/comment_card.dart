@@ -1,9 +1,38 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:socialnetworkapp/models/local_user.dart';
 
-class CommentCard extends StatelessWidget {
+class CommentCard extends StatefulWidget {
   final snap;
-  const CommentCard({Key? key, required this.snap}) : super(key: key);
+  const CommentCard({super.key, required this.snap});
+
+  @override
+  State<CommentCard> createState() => _CommentCardState();
+}
+
+class _CommentCardState extends State<CommentCard> {
+  LocalUser? user;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUser();
+  }
+
+  fetchUser() async {
+    try {
+      DocumentSnapshot snap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.snap['uid'])
+          .get();
+      setState(() {
+        user = LocalUser.fromSnap(snap);
+      });
+    } catch (err) {
+      print(err.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +41,12 @@ class CommentCard extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundImage: NetworkImage(
-              snap['avatar'],
-            ),
+            backgroundImage: user?.photoURL != null && user!.photoURL.isNotEmpty
+                ? NetworkImage(
+                    user!.photoURL.toString(),
+                  )
+                : const AssetImage('assets/images/empty_avatar.png')
+                    as ImageProvider<Object>,
             radius: 18,
           ),
           Expanded(
@@ -28,12 +60,14 @@ class CommentCard extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                            text: snap['userName'],
+                            text: user?.displayName == null
+                                ? ""
+                                : user!.displayName,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             )),
                         TextSpan(
-                          text: ' ${snap['content']}',
+                          text: ' ${widget.snap['content']}',
                         ),
                       ],
                     ),
@@ -42,7 +76,7 @@ class CommentCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       DateFormat.yMMMd().format(
-                        snap['dateComment'].toDate(),
+                        widget.snap['dateComment'].toDate(),
                       ),
                       style: const TextStyle(
                         fontSize: 12,

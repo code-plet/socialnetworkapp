@@ -6,7 +6,7 @@ import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/utils/screens.dart';
 
 class MainLayout extends StatefulWidget {
-  const MainLayout({Key? key}) : super(key: key);
+  const MainLayout({super.key});
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
@@ -85,6 +85,13 @@ class _MainLayoutState extends State<MainLayout> {
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.add_circle,
+                color: renderSelectedItemColor(1),
+              ),
+              label: '',
+              backgroundColor: primaryColor),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.account_circle,
                 color: renderSelectedItemColor(1),
               ),
               label: '',

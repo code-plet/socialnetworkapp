@@ -1,34 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/services/comment.dart';
 import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/utils/snackbar.dart';
 import 'package:socialnetworkapp/widget/comment_card.dart';
 
 class CommentsScreen extends StatefulWidget {
-  final postId;
-  const CommentsScreen({Key? key, required this.postId}) : super(key: key);
+  final String postId;
+  const CommentsScreen({super.key, required this.postId});
 
   @override
-  _CommentsScreenState createState() => _CommentsScreenState();
+  State<CommentsScreen> createState() => _CommentsScreenState();
 }
 
 class _CommentsScreenState extends State<CommentsScreen> {
   final TextEditingController commentEditingController =
       TextEditingController();
 
-  void postComment(String uid, String name, String profilePic) async {
-    print(uid);
-    print(name);
-    print(profilePic);
+  void postComment(LocalUser? user) async {
+    final String? uid = user?.uid;
+    final String? name = user?.displayName;
+    final String profilePic = user?.photoURL ?? '';
+
+    if (uid == null || name == null) {
+      showSnackBar(
+        context,
+        'Can not read user information',
+      );
+    }
+
     try {
       String res = await CommentService().postComment(
         widget.postId,
         commentEditingController.text,
-        uid,
+        uid!,
         profilePic,
         DateTime.now(),
-        name,
+        name!,
       );
 
       if (res != 'success') {
@@ -49,11 +59,11 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = {
-      "uid": "Q60M3qPE77QOsRwd2WGyl6S0LpI2",
-      "username": "localuser22.003",
-      "photoUrl": "assest/post_cover.png",
-    };
+    final user = Provider.of<LocalUser?>(context);
+    final profileImg = user?.photoURL != null
+        ? NetworkImage(user!.photoURL)
+        : const AssetImage('assets/image/empty_avatar.png')
+            as ImageProvider<Object>;
 
     return Scaffold(
       appBar: AppBar(
@@ -96,7 +106,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundImage: NetworkImage(user['photoUrl'].toString()),
+                backgroundImage: profileImg,
                 radius: 18,
               ),
               Expanded(
@@ -105,18 +115,14 @@ class _CommentsScreenState extends State<CommentsScreen> {
                   child: TextField(
                     controller: commentEditingController,
                     decoration: InputDecoration(
-                      hintText: 'Comment as ${user['username']}',
+                      hintText: 'Comment as ${user?.displayName}',
                       border: InputBorder.none,
                     ),
                   ),
                 ),
               ),
               InkWell(
-                onTap: () => postComment(
-                  user['uid'].toString(),
-                  user['username'].toString(),
-                  user['photoUrl'].toString(),
-                ),
+                onTap: () => postComment(user),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
