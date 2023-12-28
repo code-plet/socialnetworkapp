@@ -71,6 +71,15 @@ class _AddPostScreenState extends State<AddPostScreen> {
         context,
         'Can not read user information',
       );
+      return;
+    }
+
+    if (_descriptionController.text.isEmpty) {
+      showSnackBar(
+        context,
+        'Content can not be empty',
+      );
+      return;
     }
 
     setState(() {
@@ -82,8 +91,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
       String res = await PostService().uploadPost(
         _descriptionController.text,
         _file,
-        uid!,
-        name!,
+        uid,
+        name,
         profilePic,
       );
       if (res == "success") {

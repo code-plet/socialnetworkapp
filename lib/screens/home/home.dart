@@ -18,6 +18,17 @@ class HomeScreen extends StatelessWidget {
                 child: CircularProgressIndicator(),
               );
             }
+
+            if (snapshot.hasError) {
+              return const Center(
+                child: Text(
+                  "Can not get posts data",
+                  style:
+                      TextStyle(fontStyle: FontStyle.italic, color: Colors.red),
+                ),
+              );
+            }
+
             return ListView.builder(
                 shrinkWrap: true,
                 itemCount: snapshot.data!.docs.length,

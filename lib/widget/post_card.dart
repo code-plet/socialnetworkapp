@@ -20,29 +20,12 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
-  int commentLen = 0;
   bool isLikeAnimating = false;
   LocalUser? user;
 
   @override
   void initState() {
     super.initState();
-    fetchCommentLen();
-  }
-
-  fetchCommentLen() async {
-    try {
-      QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(widget.snap['postId'])
-          .collection('comments')
-          .get();
-      setState(() {
-        commentLen = snap.docs.length;
-      });
-    } catch (err) {
-      print(err.toString());
-    }
   }
 
   deletePost(String postId) async {
@@ -80,6 +63,16 @@ class _PostCardState extends State<PostCard> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    "Can not get owner post data",
+                    style: TextStyle(
+                        fontStyle: FontStyle.italic, color: Colors.red),
+                  ),
                 );
               }
 
@@ -303,6 +296,17 @@ class _PostCardState extends State<PostCard> {
                             ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return const Center(
+                            child: Text(
+                              "Can not get data of comments of post.",
+                              style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.red),
+                            ),
                           );
                         }
                         return Text(
