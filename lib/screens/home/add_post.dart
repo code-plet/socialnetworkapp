@@ -61,7 +61,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     );
   }
 
-  void postImage(LocalUser? user) async {
+  void createNewPost(LocalUser? user) async {
     final String? uid = user?.uid;
     final String? name = user?.displayName;
     final String profilePic = user?.photoURL ?? '';
@@ -148,7 +148,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         centerTitle: false,
         actions: <Widget>[
           TextButton(
-            onPressed: () => postImage(user),
+            onPressed: () => createNewPost(user),
             child: const Text(
               "Post",
               style: TextStyle(
