@@ -60,7 +60,7 @@ class _PostCardState extends State<PostCard> {
 
     return Container(
       // boundary needed for web
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.transparent,
       ),
       padding: const EdgeInsets.symmetric(

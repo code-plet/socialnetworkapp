@@ -39,7 +39,7 @@ class _CreateProfileState extends State<CreateProfile> {
         backgroundColor: Colors.blue[500],
       ),
       body: Stack(children: [
-        Container(
+        SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -150,7 +150,7 @@ class _CreateProfileState extends State<CreateProfile> {
               TextButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    dynamic user = await _auth.getCurrentUser();
+                    dynamic user = _auth.getCurrentUser();
                     if (user == null) throw Exception("Can't identify user");
                     if (user is LocalUser) {
                       try {

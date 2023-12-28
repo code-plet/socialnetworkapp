@@ -30,6 +30,7 @@ class LocalUser {
       }
       return "Successfully changed userName";
     }
+    return null;
   }
 
   Future<String?> changePhotoUrl(Uint8List photo) async {
@@ -58,6 +59,7 @@ class LocalUser {
       }
       return "Successfully changed photoURL";
     }
+    return null;
   }
 
   Map<String, dynamic> toJson() => {

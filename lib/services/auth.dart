@@ -29,8 +29,9 @@ class AuthService {
     dynamic user = _auth.currentUser;
     if (user is User) {
       return _userFromFirebaseUser(user);
-    } else
+    } else {
       return null;
+    }
   }
 
   User? getFirebaseUser() {
