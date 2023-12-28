@@ -9,7 +9,9 @@ import 'package:socialnetworkapp/widget/comment_card.dart';
 
 class CommentsScreen extends StatefulWidget {
   final String postId;
-  const CommentsScreen({super.key, required this.postId});
+  final String ownerPostUid;
+  const CommentsScreen(
+      {super.key, required this.postId, required this.ownerPostUid});
 
   @override
   State<CommentsScreen> createState() => _CommentsScreenState();
@@ -91,6 +93,9 @@ class _CommentsScreenState extends State<CommentsScreen> {
             shrinkWrap: true,
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (ctx, index) => CommentCard(
+              key: Key(snapshot.data!.docs[index].data()['commentId']),
+              postId: widget.postId,
+              ownerPostUid: widget.ownerPostUid,
               snap: snapshot.data!.docs[index].data(),
             ),
           );

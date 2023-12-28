@@ -242,6 +242,7 @@ class _PostCardState extends State<PostCard> {
                   MaterialPageRoute(
                     builder: (context) => CommentsScreen(
                       postId: widget.snap['postId'].toString(),
+                      ownerPostUid: widget.snap['uid'],
                     ),
                   ),
                 ),
@@ -289,18 +290,36 @@ class _PostCardState extends State<PostCard> {
                 InkWell(
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      'View all $commentLen comments',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: secondaryColor,
-                      ),
+                    child: StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('posts')
+                          .doc(widget.snap['postId'])
+                          .collection('comments')
+                          .snapshots(),
+                      builder: (context,
+                          AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                              snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        return Text(
+                          'View all ${snapshot.data!.docs.length} comments',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: secondaryColor,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => CommentsScreen(
                         postId: widget.snap['postId'].toString(),
+                        ownerPostUid: widget.snap['uid'],
                       ),
                     ),
                   ),

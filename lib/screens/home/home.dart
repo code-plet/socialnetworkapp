@@ -22,7 +22,10 @@ class HomeScreen extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: snapshot.data!.docs.length,
                 itemBuilder: (ctx, index) {
-                  return PostCard(snap: snapshot.data!.docs[index].data());
+                  return PostCard(
+                    snap: snapshot.data!.docs[index].data(),
+                    key: Key(snapshot.data!.docs[index].data()['postId']),
+                  );
                 });
           },
         )

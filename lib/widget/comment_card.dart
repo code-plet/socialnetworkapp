@@ -1,18 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:socialnetworkapp/models/local_user.dart';
+import 'package:socialnetworkapp/services/comment.dart';
 
 class CommentCard extends StatefulWidget {
+  final String postId;
+  final String ownerPostUid;
   final snap;
-  const CommentCard({super.key, required this.snap});
+  const CommentCard(
+      {super.key,
+      required this.snap,
+      required this.postId,
+      required this.ownerPostUid});
 
   @override
   State<CommentCard> createState() => _CommentCardState();
 }
 
 class _CommentCardState extends State<CommentCard> {
-  LocalUser? user;
+  LocalUser? ownerComment;
 
   @override
   void initState() {
@@ -27,8 +35,16 @@ class _CommentCardState extends State<CommentCard> {
           .doc(widget.snap['uid'])
           .get();
       setState(() {
-        user = LocalUser.fromSnap(snap);
+        ownerComment = LocalUser.fromSnap(snap);
       });
+    } catch (err) {
+      print(err.toString());
+    }
+  }
+
+  deleteComment(String commentId) async {
+    try {
+      await CommentService().deleteComment(widget.postId, commentId);
     } catch (err) {
       print(err.toString());
     }
@@ -36,14 +52,18 @@ class _CommentCardState extends State<CommentCard> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<LocalUser?>(context);
+    final String? uid = user?.uid;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundImage: user?.photoURL != null && user!.photoURL.isNotEmpty
+            backgroundImage: ownerComment?.photoURL != null &&
+                    ownerComment!.photoURL.isNotEmpty
                 ? NetworkImage(
-                    user!.photoURL.toString(),
+                    ownerComment!.photoURL.toString(),
                   )
                 : const AssetImage('assets/images/empty_avatar.png')
                     as ImageProvider<Object>,
@@ -60,9 +80,9 @@ class _CommentCardState extends State<CommentCard> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                            text: user?.displayName == null
+                            text: ownerComment?.displayName == null
                                 ? ""
-                                : user!.displayName,
+                                : ownerComment!.displayName,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             )),
@@ -88,13 +108,43 @@ class _CommentCardState extends State<CommentCard> {
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            child: const Icon(
-              Icons.favorite,
-              size: 16,
-            ),
-          )
+          widget.snap['uid'].toString() == uid || widget.ownerPostUid == uid
+              ? IconButton(
+                  onPressed: () {
+                    showDialog(
+                      useRootNavigator: false,
+                      context: context,
+                      builder: (context) {
+                        return Dialog(
+                          child: ListView(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shrinkWrap: true,
+                              children: [
+                                'Delete',
+                              ]
+                                  .map(
+                                    (e) => InkWell(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12, horizontal: 16),
+                                          child: Text(e),
+                                        ),
+                                        onTap: () {
+                                          deleteComment(
+                                            widget.snap['commentId'].toString(),
+                                          );
+                                          // remove the dialog box
+                                          Navigator.of(context).pop();
+                                        }),
+                                  )
+                                  .toList()),
+                        );
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.more_vert),
+                )
+              : Container(),
         ],
       ),
     );
