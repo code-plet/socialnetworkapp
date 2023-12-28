@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 class PostService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<String> uploadPost(String description, Uint8List file, String? uid,
+  Future<String> uploadPost(String description, Uint8List? file, String? uid,
       String username, String profImage) async {
     String res = "Some error occurred";
 
@@ -17,8 +17,10 @@ class PostService {
     }
 
     try {
-      String photoUrl =
-          await StorageMethods().uploadImageToStorage('posts', file, true);
+      String photoUrl = file != null
+          ? await StorageMethods().uploadImageToStorage('posts', file, true)
+          : "";
+
       String postId = const Uuid().v1(); // creates unique id based on time
       Post post = Post(
         description: description,
