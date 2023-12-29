@@ -74,14 +74,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
       return;
     }
 
-    if (_descriptionController.text.isEmpty) {
-      showSnackBar(
-        context,
-        'Content can not be empty',
-      );
-      return;
-    }
-
     setState(() {
       isLoading = true;
     });
