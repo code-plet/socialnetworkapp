@@ -99,15 +99,7 @@ class _CommentCardState extends State<CommentCard> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                 )),
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: ' ${widget.snap['content']}',
-                              ),
-                            ],
-                          ),
-                        ),
+                        Text(widget.snap['content']),
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
