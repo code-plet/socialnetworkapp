@@ -244,6 +244,7 @@ class _PostCardState extends State<PostCard> {
           ),
           //DESCRIPTION AND NUMBER OF COMMENTS
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -258,27 +259,10 @@ class _PostCardState extends State<PostCard> {
                       '${widget.snap['likes'].length} likes',
                       style: Theme.of(context).textTheme.bodyMedium,
                     )),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.only(
-                    top: 8,
-                  ),
-                  child: RichText(
-                    text: TextSpan(
-                      style: const TextStyle(color: primaryColor),
-                      children: [
-                        TextSpan(
-                          text: widget.snap['username'].toString(),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' ${widget.snap['description']}',
-                        ),
-                      ],
-                    ),
-                  ),
+                Text(
+                  '${widget.snap['description']}',
+                  style: const TextStyle(
+                      fontSize: 16.0, color: mobileBackgroundColor),
                 ),
                 InkWell(
                   child: Container(
