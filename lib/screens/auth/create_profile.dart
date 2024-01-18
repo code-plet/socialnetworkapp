@@ -58,7 +58,8 @@ class _CreateProfileState extends State<CreateProfile> {
                             as ImageProvider<Object>,
                 radius: 60,
               ),
-              TextButton(
+              TextButton
+                (
                   onPressed: () async {
                     bool isCamera = await showDialog(
                         context: context,
