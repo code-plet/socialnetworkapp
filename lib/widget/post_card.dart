@@ -20,29 +20,12 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
-  int commentLen = 0;
   bool isLikeAnimating = false;
   LocalUser? user;
 
   @override
   void initState() {
     super.initState();
-    fetchCommentLen();
-  }
-
-  fetchCommentLen() async {
-    try {
-      QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(widget.snap['postId'])
-          .collection('comments')
-          .get();
-      setState(() {
-        commentLen = snap.docs.length;
-      });
-    } catch (err) {
-      print(err.toString());
-    }
   }
 
   deletePost(String postId) async {
@@ -60,7 +43,7 @@ class _PostCardState extends State<PostCard> {
 
     return Container(
       // boundary needed for web
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.transparent,
       ),
       padding: const EdgeInsets.symmetric(
@@ -80,6 +63,16 @@ class _PostCardState extends State<PostCard> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    "Can not get owner post data",
+                    style: TextStyle(
+                        fontStyle: FontStyle.italic, color: Colors.red),
+                  ),
                 );
               }
 
@@ -242,6 +235,7 @@ class _PostCardState extends State<PostCard> {
                   MaterialPageRoute(
                     builder: (context) => CommentsScreen(
                       postId: widget.snap['postId'].toString(),
+                      ownerPostUid: widget.snap['uid'],
                     ),
                   ),
                 ),
@@ -250,6 +244,7 @@ class _PostCardState extends State<PostCard> {
           ),
           //DESCRIPTION AND NUMBER OF COMMENTS
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -264,43 +259,55 @@ class _PostCardState extends State<PostCard> {
                       '${widget.snap['likes'].length} likes',
                       style: Theme.of(context).textTheme.bodyMedium,
                     )),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.only(
-                    top: 8,
-                  ),
-                  child: RichText(
-                    text: TextSpan(
-                      style: const TextStyle(color: primaryColor),
-                      children: [
-                        TextSpan(
-                          text: widget.snap['username'].toString(),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' ${widget.snap['description']}',
-                        ),
-                      ],
-                    ),
-                  ),
+                Text(
+                  '${widget.snap['description']}',
+                  style: const TextStyle(
+                      fontSize: 16.0, color: mobileBackgroundColor),
                 ),
                 InkWell(
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      'View all $commentLen comments',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: secondaryColor,
-                      ),
+                    child: StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('posts')
+                          .doc(widget.snap['postId'])
+                          .collection('comments')
+                          .snapshots(),
+                      builder: (context,
+                          AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                              snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return const Center(
+                            child: Text(
+                              "Can not get data of comments of post.",
+                              style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.red),
+                            ),
+                          );
+                        }
+                        return Text(
+                          'View all ${snapshot.data!.docs.length} comments',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: secondaryColor,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => CommentsScreen(
                         postId: widget.snap['postId'].toString(),
+                        ownerPostUid: widget.snap['uid'],
                       ),
                     ),
                   ),

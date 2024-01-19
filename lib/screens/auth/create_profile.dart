@@ -23,6 +23,46 @@ class _CreateProfileState extends State<CreateProfile> {
 
   dynamic image = const AssetImage("assets/images/empty_avatar.png");
 
+  _selectImage(BuildContext parentContext) async {
+    return showDialog(
+      context: parentContext,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Change your avatar'),
+          children: <Widget>[
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Take a photo'),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  Uint8List? file = await pickImage(ImageSource.camera);
+                  setState(() {
+                    photo = file;
+                  });
+                }),
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Choose from Gallery'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  Uint8List? file = await pickImage(ImageSource.gallery);
+                  setState(() {
+                    photo = file;
+                  });
+                }),
+            SimpleDialogOption(
+              padding: const EdgeInsets.all(20),
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<LocalUser?>(context);
@@ -38,8 +78,8 @@ class _CreateProfileState extends State<CreateProfile> {
         )),
         backgroundColor: Colors.blue[500],
       ),
-      body: Stack(children: [
-        Container(
+      body: Column(children: [
+        SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -58,58 +98,8 @@ class _CreateProfileState extends State<CreateProfile> {
                             as ImageProvider<Object>,
                 radius: 60,
               ),
-              TextButton
-                (
-                  onPressed: () async {
-                    bool isCamera = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                              content: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 0, horizontal: 0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop(true);
-                                      },
-                                      child: const Row(
-                                        children: [
-                                          Icon(Icons.camera),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Text("Camera"),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 8,
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop(false);
-                                      },
-                                      child: const Row(children: [
-                                        Icon(Icons.browse_gallery),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text("gallery"),
-                                      ]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ));
-
-                    Uint8List file = await pickImage(
-                        !isCamera ? ImageSource.gallery : ImageSource.camera);
-                    setState(() {
-                      photo = file;
-                    });
-                  },
+              TextButton(
+                  onPressed: () => _selectImage(context),
                   child: const Text('Change your profile picture')),
               const SizedBox(
                 height: 40,
@@ -143,45 +133,50 @@ class _CreateProfileState extends State<CreateProfile> {
             ],
           ),
         ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Row(
+        SizedBox(
+          height: 16.0,
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              TextButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    dynamic user = await _auth.getCurrentUser();
-                    if (user == null) throw Exception("Can't identify user");
-                    if (user is LocalUser) {
-                      try {
-                        await user.changeDisplayName(displayName);
-                        user.displayName = displayName;
-                        if (photo != null) {
-                          await user.changePhotoUrl(photo!);
-                          user.photoURL = photoUrl;
-                        }
-                        if (context.mounted) {
-                          Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                  builder: (context) => const MainLayout()),
-                              (route) => route == null);
-                        }
-                      } catch (e) {
-                        print(e.toString());
-                      }
-                    }
-                  }
-                },
-                style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 20)),
-                child: const Text(
-                  'Next >',
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
+              Text(
+                "Save information",
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              )
             ],
           ),
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              dynamic user = _auth.getCurrentUser();
+              if (user == null) throw Exception("Can't identify user");
+              if (user is LocalUser) {
+                try {
+                  await user.changeDisplayName(displayName);
+                  user.displayName = displayName;
+                  if (photo != null) {
+                    await user.changePhotoUrl(photo!);
+                    user.photoURL = photoUrl;
+                  }
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (context) => const MainLayout()),
+                        (route) => route == null);
+                  }
+                } catch (e) {
+                  print(e.toString());
+                }
+              }
+            }
+          },
         ),
       ]),
     );

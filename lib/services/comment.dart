@@ -20,7 +20,7 @@ class CommentService {
           dateComment: dateComment,
         );
 
-        _firestore
+        await _firestore
             .collection('posts')
             .doc(postId)
             .collection('comments')
@@ -30,6 +30,23 @@ class CommentService {
       } else {
         res = "Please enter text";
       }
+    } catch (err) {
+      res = err.toString();
+    }
+    return res;
+  }
+
+  // Delete comment
+  Future<String> deleteComment(String postId, String commentId) async {
+    String res = "Some error occurred";
+    try {
+      await _firestore
+          .collection('posts')
+          .doc(postId)
+          .collection('comments')
+          .doc(commentId)
+          .delete();
+      res = 'success';
     } catch (err) {
       res = err.toString();
     }

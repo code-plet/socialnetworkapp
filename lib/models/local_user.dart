@@ -16,7 +16,11 @@ class LocalUser {
   final AuthService _auth = AuthService();
 
   LocalUser(
-      {required this.uid, required this.displayName, required this.photoURL, this.email, this.phoneNumber});
+      {required this.uid,
+      required this.displayName,
+      required this.photoURL,
+      this.email,
+      this.phoneNumber});
 
   Future<String?> changeDisplayName(String displayName) async {
     dynamic user = _auth.getFirebaseUser();
@@ -61,36 +65,33 @@ class LocalUser {
       return "Successfully changed photoURL";
     }
   }
-  
-  Future<String?> changeEmail(String email) async{
-    
+
+  Future<String?> changeEmail(String email) async {
     dynamic user = _auth.getFirebaseUser();
-    if(user == null) return null;
-    
-    if(user is User){
-      try{
+    if (user == null) return null;
+
+    if (user is User) {
+      try {
         await user.updateEmail(email);
         await UserFireStore.doc(user.uid).update({"email": email});
         this.email = email;
-      } catch(e) {
+      } catch (e) {
         return e.toString();
       }
       return "Successfully changed user email";
     }
   }
 
-  Future<String?> changePhone(String phone) async{
-
+  Future<String?> changePhone(String phone) async {
     dynamic user = _auth.getFirebaseUser();
-    if(user == null) return null;
+    if (user == null) return null;
 
-    if(user is User){
-      try{
-
+    if (user is User) {
+      try {
         //await user.updatePhoneNumber();
         await UserFireStore.doc(user.uid).update({"email": email});
         this.email = email;
-      } catch(e) {
+      } catch (e) {
         return e.toString();
       }
       return "Successfully changed user email";

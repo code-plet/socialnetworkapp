@@ -26,8 +26,8 @@ class _SignUpState extends State<SignUp> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Container(
-          margin: EdgeInsets.symmetric(vertical: 0, horizontal: 45),
-          child: Text(
+          margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 45),
+          child: const Text(
             'Sign up to Social',
             style: TextStyle(color: Colors.white),
           ),
@@ -42,16 +42,17 @@ class _SignUpState extends State<SignUp> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 40),
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 40),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                   decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(10)),
@@ -61,18 +62,19 @@ class _SignUpState extends State<SignUp> {
                           ? "Please enter an email"
                           : null;
                     },
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         icon: Icon(Icons.person), labelText: "Email"),
                     onChanged: (val) {
                       setState(() => email = val);
                     },
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                   decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(10)),
@@ -92,7 +94,7 @@ class _SignUpState extends State<SignUp> {
                     },
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 Container(
@@ -126,7 +128,7 @@ class _SignUpState extends State<SignUp> {
                       error,
                       style: const TextStyle(color: Colors.red),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     )
                   ]),

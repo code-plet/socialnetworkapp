@@ -29,8 +29,9 @@ class AuthService {
     dynamic user = _auth.currentUser;
     if (user is User) {
       return _userFromFirebaseUser(user);
-    } else
+    } else {
       return null;
+    }
   }
 
   User? getFirebaseUser() {
@@ -43,19 +44,6 @@ class AuthService {
   }
 
   // sign in anonymously
-  Future signInAnon() async {
-    try {
-      UserCredential result = await _auth.signInAnonymously();
-      if (result.user == null) return null;
-
-      User user = result.user!;
-      saveUserData(user);
-      return _userFromFirebaseUser(user);
-    } catch (e) {
-      print(e.toString());
-      return null;
-    }
-  }
 
   // sign in with email and password
   Future signInWithEmailAndPassword(
@@ -78,6 +66,9 @@ class AuthService {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
+      if (result.user != null) {
+        saveUserData(result.user!);
+      }
       return _userFromFirebaseUser(result.user);
     } catch (e) {
       return e.toString();
