@@ -17,6 +17,47 @@ class PersonalProfile extends StatefulWidget {
 }
 
 class _PersonalProfileState extends State<PersonalProfile> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    comments = fetchComment();
+    likes = fetchLikes()
+;  }
+
+  Future<int> fetchComment() async {
+    int count = 0;
+
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    AuthService auth = AuthService();
+    QuerySnapshot<Map<String, dynamic>> comments = await db.collectionGroup('comments').where("uid", isEqualTo: auth.getCurrentUser()?.uid).get();
+    comments.docs.forEach((comment) {
+          print(comment.data().toString());
+          count = count+1;
+    });
+    return count;
+  }
+
+  Future<int> fetchLikes() async {
+    int count = 0;
+
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    
+    AuthService auth = AuthService();
+    QuerySnapshot<Map<String, dynamic>> posts = await db.collection('posts').where('uid', isEqualTo: auth.getCurrentUser()?.uid).get();
+    posts.docs.forEach((post) {
+      print(post.data().toString());
+      List likes = post.data()['likes'] as List;
+
+      count = count+likes.length;
+    });
+    return count;
+  }
+  
+  late Future<int> comments;
+  late Future<int> likes;
+  
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   Uint8List? photo;
@@ -25,19 +66,10 @@ class _PersonalProfileState extends State<PersonalProfile> {
 
   @override
   Widget build(BuildContext context) {
+
     final user = Provider.of<LocalUser?>(context);
     String displayName = user?.displayName ?? "";
     String photoUrl = user?.photoURL ?? "";
-
-    Future<int> getComment() async {
-      int count = 0;
-      FirebaseFirestore db = FirebaseFirestore.instance;
-      QuerySnapshot<Map<String, dynamic>> snapshot = await db.collection("posts").where("uid", isEqualTo: user?.uid).get();
-      snapshot.docs.forEach((post) async {
-        count += (await post.reference.collection("comments").where("uid", isEqualTo: user?.uid).count()) as int;
-      });
-      return count;
-    }
 
     return Scaffold(
       body: Stack(children: [
@@ -93,39 +125,45 @@ class _PersonalProfileState extends State<PersonalProfile> {
                       );
                     }
                   ),
-                  StreamBuilder(
-                      stream: FirebaseFirestore.instance.collection('posts').where("uid", isEqualTo: user?.uid).snapshots(),
-                      builder: (context,
-                          AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        int countComments = 0;
-                        snapshot.data?.docs.forEach((post) async {
-                          await post.reference.collection('comments').where('uid', isEqualTo: user?.uid).get().then((commentSnapshot) {
-                            countComments = countComments + 1;
-                            for (var comment in commentSnapshot.docs) {
-                              print('${comment.id} => ${comment.data()}');
-                            }
-                          });
-                        });
-                      return Column(
-                        children: [
-                          Text(
-                            countComments.toString(),
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20), ),
-                          Text("Comments", style: TextStyle(color: Colors.grey.shade700), )
-                        ],
-                      );
+                  FutureBuilder(
+                    future: comments,
+                    builder: (context, snapshot) {
+                      if(snapshot.hasError){
+                        final error = snapshot.error;
+                        print(snapshot.error.toString());
+                        return Text("error");
+                      }
+                      if(snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
+                        return Column(
+                          children: [
+                            Text(
+                              snapshot.data.toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20), ),
+                            Text("Comments", style: TextStyle(color: Colors.grey.shade700), ),
+                          ],
+                        );
+                      } else return CircularProgressIndicator();
                     }
                   ),
-                  Column(
-                    children: [
-                      Text("12", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20), ),
-                      Text("Likes", style: TextStyle(color: Colors.grey.shade700),)
-                    ],
+                  FutureBuilder<Object>(
+                    future: likes,
+                      builder: (context, snapshot) {
+                        if(snapshot.hasError){
+                          final error = snapshot.error;
+                          print(snapshot.error.toString());
+                          return Text("error");
+                        }
+                        if(snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
+                          return Column(
+                            children: [
+                              Text(
+                                snapshot.data.toString(),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20), ),
+                              Text("Likes", style: TextStyle(color: Colors.grey.shade700), ),
+                            ],
+                          );
+                        } else return CircularProgressIndicator();
+                      }
                   ),
                 ]
               ),
@@ -140,7 +178,7 @@ class _PersonalProfileState extends State<PersonalProfile> {
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(10)),
                   side: BorderSide( width: 2, color: Colors.grey),
-                  fixedSize: Size(350, 35)
+                  fixedSize: Size(350, 35),
                 ),
 
               ),

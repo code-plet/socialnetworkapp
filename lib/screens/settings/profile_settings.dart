@@ -201,6 +201,8 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                     try{
                       if(displayName != user?.displayName) user?.changeDisplayName(displayName);
                       if(email != user?.email) user?.changeEmail(email);
+                    } catch(e) {
+                      rethrow;
                     }
                   }
                 },
