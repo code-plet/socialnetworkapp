@@ -9,12 +9,18 @@ class LocalUser {
   String uid;
   String? displayName;
   String photoURL;
+  String? phoneNumber = "";
+  String? email = "";
 
   final UserFireStore = FirebaseFirestore.instance.collection('users');
   final AuthService _auth = AuthService();
 
   LocalUser(
-      {required this.uid, required this.displayName, required this.photoURL});
+      {required this.uid,
+      required this.displayName,
+      required this.photoURL,
+      this.email,
+      this.phoneNumber});
 
   Future<String?> changeDisplayName(String displayName) async {
     dynamic user = _auth.getFirebaseUser();
@@ -30,7 +36,6 @@ class LocalUser {
       }
       return "Successfully changed userName";
     }
-    return null;
   }
 
   Future<String?> changePhotoUrl(Uint8List photo) async {
@@ -59,7 +64,38 @@ class LocalUser {
       }
       return "Successfully changed photoURL";
     }
-    return null;
+  }
+
+  Future<String?> changeEmail(String email) async {
+    dynamic user = _auth.getFirebaseUser();
+    if (user == null) return null;
+
+    if (user is User) {
+      try {
+        await user.updateEmail(email);
+        await UserFireStore.doc(user.uid).update({"email": email});
+        this.email = email;
+      } catch (e) {
+        return e.toString();
+      }
+      return "Successfully changed user email";
+    }
+  }
+
+  Future<String?> changePhone(String phone) async {
+    dynamic user = _auth.getFirebaseUser();
+    if (user == null) return null;
+
+    if (user is User) {
+      try {
+        //await user.updatePhoneNumber();
+        await UserFireStore.doc(user.uid).update({"email": email});
+        this.email = email;
+      } catch (e) {
+        return e.toString();
+      }
+      return "Successfully changed user email";
+    }
   }
 
   Map<String, dynamic> toJson() => {

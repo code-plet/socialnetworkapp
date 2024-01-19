@@ -51,7 +51,8 @@ class _SignUpState extends State<SignUp> {
                   height: 20,
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                   decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(10)),
@@ -72,7 +73,8 @@ class _SignUpState extends State<SignUp> {
                   height: 20,
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                   decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(10)),

@@ -52,7 +52,8 @@ class _SignInState extends State<SignIn> {
                   height: 20,
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                   decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(10)),
@@ -73,7 +74,8 @@ class _SignInState extends State<SignIn> {
                   height: 20,
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                   decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(10)),
@@ -106,8 +108,8 @@ class _SignInState extends State<SignIn> {
                   ]),
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: 0, horizontal: 100),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 0, horizontal: 100),
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(0),
@@ -144,8 +146,8 @@ class _SignInState extends State<SignIn> {
                   color: Colors.blue, decoration: TextDecoration.underline),
             ),
             onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => const SignUp()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const SignUp()));
             },
           ),
         ]),
