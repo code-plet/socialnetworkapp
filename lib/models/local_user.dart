@@ -36,6 +36,7 @@ class LocalUser {
       }
       return "Successfully changed userName";
     }
+    return null;
   }
 
   Future<String?> changePhotoUrl(Uint8List photo) async {
@@ -64,6 +65,7 @@ class LocalUser {
       }
       return "Successfully changed photoURL";
     }
+    return null;
   }
 
   Future<String?> changeEmail(String email) async {
@@ -80,6 +82,7 @@ class LocalUser {
       }
       return "Successfully changed user email";
     }
+    return null;
   }
 
   Future<String?> changePhone(String phone) async {
@@ -90,12 +93,13 @@ class LocalUser {
       try {
         //await user.updatePhoneNumber();
         await UserFireStore.doc(user.uid).update({"email": email});
-        this.email = email;
+        email = email;
       } catch (e) {
         return e.toString();
       }
       return "Successfully changed user email";
     }
+    return null;
   }
 
   Map<String, dynamic> toJson() => {

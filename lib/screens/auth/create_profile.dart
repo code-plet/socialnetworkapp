@@ -133,7 +133,7 @@ class _CreateProfileState extends State<CreateProfile> {
             ],
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 16.0,
         ),
         ElevatedButton(

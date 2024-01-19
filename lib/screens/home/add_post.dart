@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/services/post.dart';
-import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/utils/image_picker.dart';
 import 'package:socialnetworkapp/utils/snackbar.dart';
 
@@ -19,7 +18,7 @@ class AddPostScreen extends StatefulWidget {
 class _AddPostScreenState extends State<AddPostScreen> {
   Uint8List? _file;
   bool isLoading = false;
-  final TextEditingController _descriptionController = TextEditingController();
+  String content = "";
 
   _selectImage(BuildContext parentContext) async {
     return showDialog(
@@ -81,7 +80,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     try {
       // upload to storage and db
       String res = await PostService().uploadPost(
-        _descriptionController.text,
+        content,
         _file,
         uid,
         name,
@@ -119,14 +118,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
   void clear() {
     setState(() {
       _file = null;
+      content = "";
     });
-    _descriptionController.text = "";
   }
 
   @override
   void dispose() {
     super.dispose();
-    _descriptionController.dispose();
   }
 
   @override
@@ -158,7 +156,11 @@ class _AddPostScreenState extends State<AddPostScreen> {
             SizedBox(
               width: MediaQuery.of(context).size.width - 60,
               child: TextField(
-                controller: _descriptionController,
+                onChanged: (value) => {
+                  setState(() {
+                    content = value;
+                  })
+                },
                 decoration: const InputDecoration(
                     hintText: "Write a caption...", border: InputBorder.none),
                 maxLines: 8,
@@ -178,7 +180,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              onPressed: _descriptionController.text.isEmpty || _file == null
+              onPressed: content.isEmpty && _file == null
                   ? null
                   : () => createNewPost(user),
               child: const Row(
@@ -197,6 +199,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   )
                 ],
               ),
+            ),
+            const SizedBox(
+              height: 8,
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

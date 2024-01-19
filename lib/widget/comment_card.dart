@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:socialnetworkapp/models/local_user.dart';
+import 'package:socialnetworkapp/screens/home/personal_profile.dart';
 import 'package:socialnetworkapp/services/comment.dart';
+import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/utils/snackbar.dart';
 
 class CommentCard extends StatefulWidget {
@@ -72,16 +74,38 @@ class _CommentCardState extends State<CommentCard> {
               children: [
                 snapshot.hasError
                     ? errorText
-                    : CircleAvatar(
-                        backgroundImage: ownerComment?['photoURL'].toString() !=
-                                    null.toString() &&
-                                ownerComment!['photoURL'].isNotEmpty
-                            ? NetworkImage(
-                                ownerComment['photoURL'].toString(),
-                              )
-                            : const AssetImage('assets/images/empty_avatar.png')
-                                as ImageProvider<Object>,
-                        radius: 18,
+                    : InkWell(
+                        onTap: widget.snap['uid'].toString() != uid
+                            ? () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      body: PersonalProfile(
+                                        userId: ownerComment?['uid'],
+                                      ),
+                                      appBar: AppBar(
+                                        backgroundColor: primaryColor,
+                                        title: Text(
+                                          "${ownerComment?['displayName']} profile",
+                                        ),
+                                        centerTitle: false,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                            : () => {},
+                        child: CircleAvatar(
+                          backgroundImage:
+                              ownerComment?['photoURL'].toString() !=
+                                          null.toString() &&
+                                      ownerComment!['photoURL'].isNotEmpty
+                                  ? NetworkImage(
+                                      ownerComment['photoURL'].toString(),
+                                    )
+                                  : const AssetImage(
+                                          'assets/images/empty_avatar.png')
+                                      as ImageProvider<Object>,
+                          radius: 18,
+                        ),
                       ),
                 Expanded(
                   child: Padding(

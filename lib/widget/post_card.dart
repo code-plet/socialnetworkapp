@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/screens/home/comment_screen.dart';
+import 'package:socialnetworkapp/screens/home/personal_profile.dart';
 import 'package:socialnetworkapp/services/post.dart';
 import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/widget/like_animation.dart';
@@ -85,14 +86,34 @@ class _PostCardState extends State<PostCard> {
                 ).copyWith(right: 0),
                 child: Row(
                   children: <Widget>[
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundImage: user.photoURL.isNotEmpty
-                          ? NetworkImage(
-                              user.photoURL.toString(),
-                            )
-                          : const AssetImage('assets/images/empty_avatar.png')
-                              as ImageProvider<Object>,
+                    InkWell(
+                      onTap: widget.snap['uid'].toString() != uid
+                          ? () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => Scaffold(
+                                    body: PersonalProfile(
+                                      userId: user.uid,
+                                    ),
+                                    appBar: AppBar(
+                                      backgroundColor: primaryColor,
+                                      title: Text(
+                                        "${user.displayName} profile",
+                                      ),
+                                      centerTitle: false,
+                                    ),
+                                  ),
+                                ),
+                              )
+                          : () => {},
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundImage: user.photoURL.isNotEmpty
+                            ? NetworkImage(
+                                user.photoURL.toString(),
+                              )
+                            : const AssetImage('assets/images/empty_avatar.png')
+                                as ImageProvider<Object>,
+                      ),
                     ),
                     Expanded(
                       child: Padding(

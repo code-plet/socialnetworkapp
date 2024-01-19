@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:socialnetworkapp/models/local_user.dart';
 import 'package:socialnetworkapp/services/auth.dart';
 import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/utils/screens.dart';
@@ -45,11 +47,13 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<LocalUser?>(context);
+
     return Scaffold(
       body: PageView(
         controller: pageController,
         onPageChanged: onPageChanged,
-        children: screensList,
+        children: screensList(user?.uid),
       ),
       appBar: AppBar(
         title: Text("Social",
@@ -92,7 +96,7 @@ class _MainLayoutState extends State<MainLayout> {
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.account_circle,
-                color: renderSelectedItemColor(1),
+                color: renderSelectedItemColor(2),
               ),
               label: '',
               backgroundColor: primaryColor),
