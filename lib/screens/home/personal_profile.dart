@@ -84,25 +84,41 @@ class _PersonalProfileState extends State<PersonalProfile> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.blue),
-                      borderRadius: BorderRadius.circular(100)
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: CircleAvatar(
-                        backgroundImage: photo != null
-                            ? MemoryImage(photo!)
-                            : photoUrl.isNotEmpty
-                            ? NetworkImage(
-                          user!.photoURL.toString(),
-                        )
-                            : const AssetImage("assets/images/empty_avatar.png")
-                        as ImageProvider<Object>,
-                        radius: 50,
+                  Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 1, color: Colors.blue),
+                          borderRadius: BorderRadius.circular(100)
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CircleAvatar(
+                            backgroundImage: photo != null
+                                ? MemoryImage(photo!)
+                                : photoUrl.isNotEmpty
+                                ? NetworkImage(
+                              user!.photoURL.toString(),
+                            )
+                                : const AssetImage("assets/images/empty_avatar.png")
+                            as ImageProvider<Object>,
+                            radius: 50,
+                          ),
+                        ),
                       ),
-                    ),
+                      Row(
+                        children: [
+                          //Icon(Icons.person),
+                          Text(user!.displayName.toString(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                        ],
+                      ),
+                      if(user.email != null) Row(
+                        children: [
+                          Icon(Icons.email),
+                          Text(user!.email.toString(), ),
+                        ],
+                      ),
+                    ],
                   ),
                   StreamBuilder(
                       stream: FirebaseFirestore.instance.collection('posts').where("uid", isEqualTo: user?.uid).snapshots(),
@@ -188,7 +204,7 @@ class _PersonalProfileState extends State<PersonalProfile> {
       Column(
         children: [
           StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('posts').where("uid", isEqualTo: user?.uid).snapshots(),
+            stream: FirebaseFirestore.instance.collection('posts').where('uid', isEqualTo: user?.uid).snapshots(),
             builder: (context,
                 AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -196,14 +212,24 @@ class _PersonalProfileState extends State<PersonalProfile> {
                   child: CircularProgressIndicator(),
                 );
               }
-              if(snapshot.data!.docs.length == 0){
-                return Column(children: [SizedBox(height: 50,), Text("Your wall is empty! Try post something on Social.")]);
+
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    "Can not get posts data",
+                    style: TextStyle(fontStyle: FontStyle.italic, color: Colors.red),
+                  ),
+                );
               }
+
               return ListView.builder(
                   shrinkWrap: true,
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (ctx, index) {
-                    return PostCard(snap: snapshot.data!.docs[index].data());
+                    return PostCard(
+                      snap: snapshot.data!.docs[index].data(),
+                      key: Key(snapshot.data!.docs[index].data()['postId']),
+                    );
                   });
             },
           )

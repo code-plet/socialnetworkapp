@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,50 @@ class ProfileSettings extends StatefulWidget {
 }
 
 class _ProfileSettingsState extends State<ProfileSettings> {
+
+  final _formKey = GlobalKey<FormState>();
+
+  Uint8List? photo;
+  _selectImage(BuildContext parentContext) async {
+    return showDialog(
+      context: parentContext,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Change your avatar'),
+          children: <Widget>[
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Take a photo'),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  Uint8List? file = await pickImage(ImageSource.camera);
+                  setState(() {
+                    photo = file;
+                  });
+                }),
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Choose from Gallery'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  Uint8List? file = await pickImage(ImageSource.gallery);
+                  setState(() {
+                    photo = file;
+                  });
+                }),
+            SimpleDialogOption(
+              padding: const EdgeInsets.all(20),
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<LocalUser?>(context);
@@ -23,13 +68,11 @@ class _ProfileSettingsState extends State<ProfileSettings> {
     String phone = user?.phoneNumber ?? "";
     String email = user?.email ?? "";
 
-    final _formKey = GlobalKey<FormState>();
-
-
 
     Uint8List? photo;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Container(
           margin: EdgeInsets.symmetric(vertical: 0, horizontal: 45),
@@ -57,67 +100,20 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                   padding: const EdgeInsets.all(8.0),
                   child: CircleAvatar(
                     backgroundImage: photo != null
-                        ? MemoryImage(photo!)
+                        ? MemoryImage(photo)
                         : photoUrl.isNotEmpty
                         ? NetworkImage(
                       user!.photoURL.toString(),
                     )
                         : const AssetImage("assets/images/empty_avatar.png")
                     as ImageProvider<Object>,
-                    radius: 50,
+                    radius: 60,
                   ),
                 ),
               ),
               TextButton(
                   onPressed: () async {
-                    bool isCamera = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          content: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop(true);
-                                  },
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.camera),
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text("Camera"),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop(false);
-                                  },
-                                  child: const Row(children: [
-                                    Icon(Icons.browse_gallery),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text("gallery"),
-                                  ]),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ));
-
-                    Uint8List file = await pickImage(
-                        !isCamera ? ImageSource.gallery : ImageSource.camera);
-                    setState(() {
-                      photo = file;
-                    });
+                    _selectImage(context);
                   },
                   child: const Text('Change your profile picture')),
               SizedBox(height: 40),
@@ -156,7 +152,10 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                     width: 300,
                     child: TextFormField(
                       validator: (val) {
-                        return null;
+                        if(val == user?.email || EmailValidator.validate(val!)){
+                          return null;
+                        }
+                        else return "PLease enter email with correct format";
                       },
                       onChanged: (val) {
                         email = val;
@@ -170,30 +169,30 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                   ),
                 ],
               ),
-              SizedBox(height: 20,),
-              Row(
-                children: [
-                  SizedBox(width: 10,),
-                  Text("Phone", style: TextStyle(fontSize: 17),),
-                  SizedBox(width: 28,),
-                  Container(
-                    width: 300,
-                    child: TextFormField(
-                      validator: (val) {
-                        return null;
-                      },
-                      onChanged: (val) {
-                        phone = val;
-                      },
-                      initialValue: phone,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(borderSide: BorderSide(width: 2)),
-                        hintText: 'Display phone number (optional)',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              //SizedBox(height: 20,),
+              // Row(
+              //   children: [
+              //     SizedBox(width: 10,),
+              //     Text("Phone", style: TextStyle(fontSize: 17),),
+              //     SizedBox(width: 28,),
+              //     Container(
+              //       width: 300,
+              //       child: TextFormField(
+              //         validator: (val) {
+              //           return null;
+              //         },
+              //         onChanged: (val) {
+              //           phone = val;
+              //         },
+              //         initialValue: phone,
+              //         decoration: const InputDecoration(
+              //           border: OutlineInputBorder(borderSide: BorderSide(width: 2)),
+              //           hintText: 'Display phone number (optional)',
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
               SizedBox(height: 40,),
               ElevatedButton(
                 onPressed: () {
@@ -202,7 +201,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                       if(displayName != user?.displayName) user?.changeDisplayName(displayName);
                       if(email != user?.email) user?.changeEmail(email);
                     } catch(e) {
-                      rethrow;
+                      throw(e);
                     }
                   }
                 },
