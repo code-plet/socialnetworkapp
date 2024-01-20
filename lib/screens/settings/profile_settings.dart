@@ -1,32 +1,98 @@
 import 'dart:typed_data';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
-
+import 'package:socialnetworkapp/utils/snackbar.dart';
 import '../../models/local_user.dart';
 import '../../utils/image_picker.dart';
 
 class ProfileSettings extends StatefulWidget {
-  const ProfileSettings({super.key});
+  final String userId;
+  const ProfileSettings({super.key, required this.userId});
 
   @override
   State<ProfileSettings> createState() => _ProfileSettingsState();
 }
 
 class _ProfileSettingsState extends State<ProfileSettings> {
+  var formKey = GlobalKey<FormState>();
+  LocalUser? user;
+  String displayName = "";
+  String phone = "";
+  Uint8List? file0;
+
+  getUserInfo() async {
+    try {
+      final currentUser = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .get();
+      final data = currentUser.data();
+
+      setState(() {
+        user = LocalUser.fromSnap(currentUser);
+        phone = data?["phoneNumber"];
+        displayName = data?["displayName"];
+        formKey = GlobalKey<FormState>();
+      });
+    } catch (e) {
+      if (context.mounted) {
+        showSnackBar(
+          context,
+          'Can not get userInfo.',
+        );
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUserInfo();
+  }
+
+  selectImage(BuildContext parentContext) async {
+    return showDialog(
+      context: parentContext,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Choose your post image'),
+          children: <Widget>[
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Take a photo'),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  Uint8List? file = await pickImage(ImageSource.camera);
+                  setState(() {
+                    file0 = file;
+                  });
+                }),
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Choose from Gallery'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  Uint8List? file = await pickImage(ImageSource.gallery);
+                  setState(() {
+                    file0 = file;
+                  });
+                }),
+            SimpleDialogOption(
+              padding: const EdgeInsets.all(20),
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<LocalUser?>(context);
-    String displayName = user?.displayName ?? "";
-    String photoUrl = user?.photoURL ?? "";
-    String phone = user?.phoneNumber ?? "";
-    String email = user?.email ?? "";
-
-    final formKey = GlobalKey<FormState>();
-
-    Uint8List? photo;
-
     return Scaffold(
       appBar: AppBar(
         title: Container(
@@ -55,9 +121,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CircleAvatar(
-                    backgroundImage: photo != null
-                        ? MemoryImage(photo)
-                        : photoUrl.isNotEmpty
+                    backgroundImage: file0 != null
+                        ? MemoryImage(file0!)
+                        : user?.photoURL != null && user!.photoURL.isNotEmpty
                             ? NetworkImage(
                                 user!.photoURL.toString(),
                               )
@@ -68,58 +134,30 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                 ),
               ),
               TextButton(
-                  onPressed: () async {
-                    bool isCamera = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                              content: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 0, horizontal: 0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop(true);
-                                      },
-                                      child: const Row(
-                                        children: [
-                                          Icon(Icons.camera),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Text("Camera"),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 8,
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop(false);
-                                      },
-                                      child: const Row(children: [
-                                        Icon(Icons.browse_gallery),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text("gallery"),
-                                      ]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ));
-
-                    Uint8List file = await pickImage(
-                        !isCamera ? ImageSource.gallery : ImageSource.camera);
-                    setState(() {
-                      photo = file;
-                    });
-                  },
+                  onPressed: () => selectImage(context),
                   child: const Text('Change your profile picture')),
               const SizedBox(height: 40),
+              Row(
+                children: [
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  const Text(
+                    "Email",
+                    style: TextStyle(fontSize: 17),
+                  ),
+                  const SizedBox(
+                    width: 30,
+                  ),
+                  SizedBox(
+                    width: 300,
+                    child: Text(user?.email ?? ""),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
               Row(
                 children: [
                   const SizedBox(
@@ -137,7 +175,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                     child: TextFormField(
                       validator: (val) {
                         return (val == null || val.isEmpty)
-                            ? "please enter your username"
+                            ? "Please enter your fullName"
                             : null;
                       },
                       initialValue: displayName,
@@ -162,40 +200,6 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                     width: 10,
                   ),
                   const Text(
-                    "Email",
-                    style: TextStyle(fontSize: 17),
-                  ),
-                  const SizedBox(
-                    width: 30,
-                  ),
-                  SizedBox(
-                    width: 300,
-                    child: TextFormField(
-                      validator: (val) {
-                        return null;
-                      },
-                      onChanged: (val) {
-                        email = val;
-                      },
-                      initialValue: email,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(
-                            borderSide: BorderSide(width: 2)),
-                        hintText: 'Display email (optional)',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: [
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  const Text(
                     "Phone",
                     style: TextStyle(fontSize: 17),
                   ),
@@ -206,6 +210,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                     width: 300,
                     child: TextFormField(
                       validator: (val) {
+                        if (val?.length != 10) {
+                          return "PhoneNumber must contains 10 digit";
+                        }
                         return null;
                       },
                       onChanged: (val) {
@@ -225,12 +232,40 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                 height: 40,
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (formKey.currentState!.validate()) {
-                    if (displayName != user?.displayName) {
-                      user?.changeDisplayName(displayName);
+                    try {
+                      bool change = false;
+
+                      if (displayName != user?.displayName) {
+                        await user?.changeDisplayName(displayName);
+                        change = true;
+                      }
+
+                      if (phone != user?.phoneNumber) {
+                        await user?.changePhone(phone);
+                        change = true;
+                      }
+
+                      if (file0 != null) {
+                        await user?.changePhotoUrl(file0!);
+                        change = true;
+                      }
+
+                      if (context.mounted && change) {
+                        showSnackBar(
+                          context,
+                          'Change information successfully',
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        showSnackBar(
+                          context,
+                          'Something wrong.',
+                        );
+                      }
                     }
-                    if (email != user?.email) user?.changeEmail(email);
                   }
                 },
                 style: ElevatedButton.styleFrom(

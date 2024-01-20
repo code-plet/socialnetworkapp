@@ -10,10 +10,13 @@ class AuthService {
   //Convert Firebase User to native User
   LocalUser? _userFromFirebaseUser(User? user) {
     if (user == null) return null;
+
     return LocalUser(
         uid: user.uid,
         displayName: user.displayName,
-        photoURL: user.photoURL.toString());
+        photoURL: user.photoURL.toString(),
+        email: user.email,
+        phoneNumber: "");
   }
 
   void saveUserData(User user) async {

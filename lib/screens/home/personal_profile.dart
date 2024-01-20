@@ -153,7 +153,9 @@ class _PersonalProfileState extends State<PersonalProfile> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ProfileSettings()));
+                            builder: (context) => ProfileSettings(
+                                  userId: user?.uid ?? "",
+                                )));
                   },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -192,6 +194,7 @@ class _PersonalProfileState extends State<PersonalProfile> {
                 ]);
               }
               return ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (ctx, index) {

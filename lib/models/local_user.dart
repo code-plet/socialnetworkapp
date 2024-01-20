@@ -68,36 +68,18 @@ class LocalUser {
     return null;
   }
 
-  Future<String?> changeEmail(String email) async {
-    dynamic user = _auth.getFirebaseUser();
-    if (user == null) return null;
-
-    if (user is User) {
-      try {
-        await user.updateEmail(email);
-        await UserFireStore.doc(user.uid).update({"email": email});
-        this.email = email;
-      } catch (e) {
-        return e.toString();
-      }
-      return "Successfully changed user email";
-    }
-    return null;
-  }
-
   Future<String?> changePhone(String phone) async {
     dynamic user = _auth.getFirebaseUser();
     if (user == null) return null;
 
     if (user is User) {
       try {
-        //await user.updatePhoneNumber();
-        await UserFireStore.doc(user.uid).update({"email": email});
-        email = email;
+        await UserFireStore.doc(user.uid).update({"phoneNumber": phone});
+        phoneNumber = phone;
       } catch (e) {
         return e.toString();
       }
-      return "Successfully changed user email";
+      return "Successfully changed phoneNumber";
     }
     return null;
   }
@@ -106,6 +88,8 @@ class LocalUser {
         "uid": uid,
         "displayName": displayName,
         "photoURL": photoURL,
+        "email": email,
+        "phoneNumber": phoneNumber
       };
 
   static LocalUser fromSnap(DocumentSnapshot snap) {
@@ -114,6 +98,8 @@ class LocalUser {
     return LocalUser(
         uid: snapshot["uid"],
         displayName: snapshot['displayName'],
-        photoURL: snapshot['photoURL']);
+        photoURL: snapshot['photoURL'],
+        email: snapshot['email'],
+        phoneNumber: snapshot['phoneNumber']);
   }
 }
