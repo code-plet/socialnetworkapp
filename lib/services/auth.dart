@@ -8,21 +8,32 @@ class AuthService {
   final UserFireStore = FirebaseFirestore.instance.collection('users');
 
   //Convert Firebase User to native User
-  LocalUser? _userFromFirebaseUser(User? user) {
+  LocalUser? _userFromFirebaseUser(
+    User? user,
+  ) {
     if (user == null) return null;
 
     return LocalUser(
-        uid: user.uid,
-        displayName: user.displayName,
-        photoURL: user.photoURL.toString(),
-        email: user.email,
-        phoneNumber: "");
+      uid: user.uid,
+      displayName: user.displayName,
+      photoURL: user.photoURL.toString(),
+      email: user.email,
+    );
   }
 
   void saveUserData(User user) async {
     try {
+      final phoneNumber =
+          (await UserFireStore.doc(user.uid).get())["phoneNumber"];
       final convertedUser = _userFromFirebaseUser(user);
-      await UserFireStore.doc(convertedUser!.uid).set(convertedUser.toJson());
+
+      await UserFireStore.doc(convertedUser!.uid).update(LocalUser(
+              uid: convertedUser.uid,
+              displayName: convertedUser.displayName,
+              photoURL: convertedUser.photoURL.toString(),
+              email: convertedUser.email,
+              phoneNumber: phoneNumber)
+          .toJson());
     } catch (e) {
       print(e.toString());
     }
@@ -35,6 +46,10 @@ class AuthService {
     } else {
       return null;
     }
+  }
+
+  User? getRawCurrentUser() {
+    return _auth.currentUser;
   }
 
   User? getFirebaseUser() {

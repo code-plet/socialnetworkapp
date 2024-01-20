@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:socialnetworkapp/models/local_user.dart';
+import 'package:socialnetworkapp/screens/settings/change_password.dart';
 import 'package:socialnetworkapp/screens/settings/profile_settings.dart';
+import 'package:socialnetworkapp/utils/colors.dart';
 import 'package:socialnetworkapp/utils/snackbar.dart';
 
 import '../../widget/post_card.dart';
@@ -50,6 +52,7 @@ class _PersonalProfileState extends State<PersonalProfile> {
     final currentLoginUser = Provider.of<LocalUser?>(context);
 
     String displayName = user?.displayName ?? "";
+    String phoneNumber = user?.phoneNumber ?? "";
     String photoUrl = user?.photoURL ?? "";
     final postSnapshot = FirebaseFirestore.instance
         .collection('posts')
@@ -85,7 +88,12 @@ class _PersonalProfileState extends State<PersonalProfile> {
                 const SizedBox(
                   height: 8,
                 ),
-                Text(displayName)
+                Text(displayName),
+                phoneNumber.isNotEmpty
+                    ? Text("Tel: $phoneNumber")
+                    : const SizedBox(
+                        height: 8,
+                      ),
               ],
             ),
             StreamBuilder(
@@ -148,23 +156,46 @@ class _PersonalProfileState extends State<PersonalProfile> {
             height: 15,
           ),
           currentLoginUser?.uid == user?.uid
-              ? OutlinedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ProfileSettings(
-                                  userId: user?.uid ?? "",
-                                )));
-                  },
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      side: const BorderSide(width: 2, color: Colors.grey),
-                      fixedSize: const Size(350, 35)),
-                  child: const Text("Edit Profile"),
+              ? Column(
+                  children: [
+                    OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ProfileSettings(
+                                      userId: user?.uid ?? "",
+                                    )));
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          side: const BorderSide(width: 2, color: Colors.grey),
+                          fixedSize: const Size(350, 35)),
+                      child: const Text("Edit Profile"),
+                    ),
+                    const SizedBox(
+                      height: 8,
+                      width: 0,
+                    ),
+                    GestureDetector(
+                        onTap: () => {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ChangePassword()))
+                            },
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Text(
+                            "Change password",
+                            style: TextStyle(color: blueColor),
+                          ),
+                        )),
+                  ],
                 )
               : const SizedBox(
                   height: 0,
@@ -194,7 +225,7 @@ class _PersonalProfileState extends State<PersonalProfile> {
                 ]);
               }
               return ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (ctx, index) {

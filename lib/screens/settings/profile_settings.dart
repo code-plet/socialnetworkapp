@@ -31,11 +31,12 @@ class _ProfileSettingsState extends State<ProfileSettings> {
 
       setState(() {
         user = LocalUser.fromSnap(currentUser);
-        phone = data?["phoneNumber"];
-        displayName = data?["displayName"];
+        phone = data?["phoneNumber"] ?? "";
+        displayName = data?["displayName"] ?? "";
         formKey = GlobalKey<FormState>();
       });
     } catch (e) {
+      print(e.toString());
       if (context.mounted) {
         showSnackBar(
           context,
